@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Sasha: Telegram-боти, автоматизація на Python, збір даних і сайти-візитки.">
+<title>Портфоліо Sasha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: a terminal-black page (about 80%) with white type, and two inverted white bands
+   (services, order) as the 20% — like a CLI printout with paper inserts. Strictly monochrome. */
+:root{
+  --black:#0B0B0C;
+  --panel:#141416;
+  --white:#F4F4F2;
+  --grey:#9A9A9E;
+  --line:#2A2A2E;
+  --ink-on-white:#0B0B0C;
+  --grey-on-white:#55555A;
+  --line-on-white:#D6D6D2;
+  --font-display:"Geologica",system-ui,"Segoe UI",Arial,sans-serif;
+  --font-body:"IBM Plex Sans",system-ui,"Segoe UI",Arial,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--black)}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--black);color:var(--white);font:400 17px/1.6 var(--font-body)}
+.band{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.band.light{background:var(--white);color:var(--ink-on-white)}
+.wrap{max-width:1080px;margin-inline:auto}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--white);outline-offset:3px}
+.light :focus-visible{outline-color:var(--ink-on-white)}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance}
+p{margin:0}
+
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 24px;padding-block:20px;border-bottom:1px solid var(--line)}
+.brand{font:500 15px/1 var(--font-mono);text-decoration:none}
+.brand::before{content:"> ";color:var(--grey)}
+.top nav{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:15px}
+.top nav a{text-decoration:none;color:var(--grey)}
+.top nav a:hover{color:var(--white);text-decoration:underline;text-underline-offset:4px}
+
+.label{font:500 12px/1.2 var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--grey)}
+.light .label{color:var(--grey-on-white)}
+.sec{padding-block:64px}
+.sec + .sec{border-top:1px solid var(--line)}
+.sec h2{font-size:clamp(1.65rem,3.4vw,2.3rem);font-weight:700;letter-spacing:-.015em;line-height:1.15;margin-top:12px}
+.lede{color:var(--grey);max-width:60ch;margin-top:14px}
+
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:48px;align-items:center;padding-block:56px 72px}
+.roles{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+.roles li{font:500 12.5px/1 var(--font-mono);padding:7px 10px;border:1px solid var(--line);border-radius:3px;color:var(--grey)}
+.roles li:first-child{background:var(--white);color:var(--black);border-color:var(--white)}
+.hero h1{font-size:clamp(2.2rem,5.4vw,3.8rem);font-weight:800;letter-spacing:-.03em;line-height:1.04;margin-top:20px}
+.hero .lead{font-size:1.125rem;color:var(--grey);max-width:52ch;margin-top:22px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.btn{display:inline-block;padding:12px 22px;border-radius:3px;font:600 15px/1.4 var(--font-body);text-decoration:none;border:2px solid var(--white)}
+.btn.primary{background:var(--white);color:var(--black)}
+.btn.primary:hover{background:transparent;color:var(--white)}
+.btn.ghost{color:var(--white)}
+.btn.ghost:hover{background:var(--white);color:var(--black)}
+.note{font-size:14px;color:var(--grey);margin-top:22px;max-width:52ch}
+
+/* telegram-style message exhibit */
+.tg{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;min-width:0}
+.bar{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);font:500 12.5px/1.3 var(--font-mono);color:var(--grey)}
+.bar .dot{width:8px;height:8px;border-radius:50%;background:var(--white)}
+.msgs{display:grid;gap:10px;padding:16px}
+.msg{max-width:92%;background:var(--black);border:1px solid var(--line);border-radius:10px 10px 10px 2px;padding:12px 14px;font-size:14.5px;line-height:1.5}
+.msg b{font-weight:600}
+.msg .meta{font:400 12.5px/1.4 var(--font-mono);color:var(--grey);margin-top:6px}
+.msg .lnk{display:inline-block;margin-top:8px;text-decoration:underline;text-underline-offset:3px}
+.msg.sys{color:var(--grey);font:400 13px/1.4 var(--font-mono)}
+
+/* services: white band */
+.services{list-style:none;margin:36px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:28px}
+.services li{border-top:3px solid var(--ink-on-white);padding-top:16px;min-width:0}
+.services h3{font-size:1.15rem;font-weight:700;line-height:1.25}
+.services p{color:var(--grey-on-white);margin-top:10px;font-size:16px}
+
+/* cases */
+.cases{margin-top:28px}
+.case{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:40px;align-items:start;padding-block:44px;border-top:1px solid var(--line)}
+.case h3{font-size:1.5rem;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+.tag{display:inline-block;margin-bottom:12px;font:500 11.5px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;padding:6px 8px;border:1px solid var(--grey);border-radius:3px;color:var(--grey)}
+.tag.live{background:var(--white);color:var(--black);border-color:var(--white)}
+.case dl{margin:22px 0 0;display:grid;gap:16px}
+.case dt{font:500 11.5px/1.2 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--grey)}
+.case dd{margin:5px 0 0;font-size:16.5px}
+.sheet{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;min-width:0}
+.scroll{overflow-x:auto}
+.data{width:100%;min-width:440px;border-collapse:collapse;font:400 13.5px/1.45 var(--font-mono);font-variant-numeric:tabular-nums}
+.data th{padding:9px 12px;text-align:left;font:500 11.5px/1.3 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--grey);border-bottom:1px solid var(--line);white-space:nowrap}
+.data td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.data tr:last-child td{border-bottom:0}
+.data td.k{color:var(--grey);white-space:nowrap}
+.data td.b{color:var(--grey);text-decoration:line-through;text-decoration-color:rgba(154,154,158,.6);white-space:pre}
+.data td.a{color:var(--white);font-weight:500}
+.data td.num,.data th.num{text-align:right}
+.data td.no{color:var(--grey)}
+.cap{padding:12px 14px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5;color:var(--grey)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid var(--line)}
+.stats div{padding:12px 14px;border-right:1px solid var(--line)}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font:500 1.6rem/1.1 var(--font-mono);font-variant-numeric:tabular-nums}
+.stats span{display:block;margin-top:4px;font-size:12.5px;line-height:1.3;color:var(--grey)}
+.term pre{margin:0;padding:16px;overflow-x:auto;font:400 13px/1.65 var(--font-mono);white-space:pre}
+.term .p{color:var(--grey)}
+
+/* mini landing mock */
+.mock{padding:22px;display:grid;gap:14px}
+.mock .nav{display:flex;justify-content:space-between;font:500 12px/1 var(--font-mono);color:var(--grey)}
+.mock .h{font:800 1.7rem/1.05 var(--font-display);letter-spacing:-.02em}
+.mock .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mock .row div{border:1px solid var(--line);border-radius:4px;padding:10px;font-size:13px}
+.mock .row b{display:block;font:500 14px/1.2 var(--font-mono);margin-top:4px}
+.mock .btn-m{justify-self:start;background:var(--white);color:var(--black);font:600 13px/1 var(--font-body);padding:10px 14px;border-radius:3px}
+
+/* process */
+.steps{list-style:none;margin:36px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:28px;counter-reset:step}
+.steps li{counter-increment:step;min-width:0}
+.steps li::before{content:counter(step);display:grid;place-items:center;width:34px;height:34px;border:2px solid var(--white);border-radius:3px;font:500 15px/1 var(--font-mono)}
+.steps h3{font-size:1.1rem;font-weight:600;margin-top:14px}
+.steps p{color:var(--grey);margin-top:8px;font-size:16px}
+
+.chips{list-style:none;margin:28px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.chips li{padding:6px 12px;border:1px solid var(--line);border-radius:3px;font:400 14px/1.4 var(--font-mono)}
+.chips li.on{background:var(--white);color:var(--black);border-color:var(--white)}
+.about p{max-width:62ch;margin-top:20px;font-size:1.0625rem}
+.about p + p{color:var(--grey)}
+
+.order{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px;margin-top:32px}
+.order h3{font-size:1.1rem;font-weight:700;margin-bottom:14px}
+.order ul{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.order li{padding-left:22px;position:relative}
+.order li::before{content:"";position:absolute;left:0;top:.62em;width:10px;height:2px;background:var(--ink-on-white)}
+.foot{padding-block:28px 8px;font-size:14px;color:var(--grey)}
+
+/* live layer */
+.hero-band{position:relative;overflow:hidden}
+#dots{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.hero-band .wrap{position:relative;z-index:1}
+.typed::after{content:"_";display:inline-block;margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.msgs{min-height:330px;align-content:start}
+.msg.in{animation:pop .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.typing{display:flex;gap:5px;padding:12px 14px;width:max-content;background:var(--black);border:1px solid var(--line);border-radius:10px 10px 10px 2px}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--grey);animation:bob 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bob{0%,60%,100%{transform:none;opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+.counter{font:500 12.5px/1 var(--font-mono);color:var(--grey);margin-left:auto}
+.counter b{color:var(--white);font-weight:500}
+.ticker{background:var(--white);color:var(--black);overflow:hidden;border-block:1px solid var(--white)}
+.ticker .track{display:flex;width:max-content;animation:run 32s linear infinite}
+.ticker span{font:800 clamp(1.4rem,3vw,2.2rem)/1 var(--font-display);letter-spacing:-.02em;padding:18px 0;white-space:nowrap}
+.ticker span::after{content:"✱";margin:0 28px;font-weight:500}
+@keyframes run{to{transform:translateX(-50%)}}
+.ticker:hover .track{animation-play-state:paused}
+.case{transition:background .25s}
+.case:hover{background:linear-gradient(90deg,rgba(244,244,242,.035),transparent 70%)}
+.case .sheet{transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .35s}
+.case:hover .sheet{transform:translateY(-6px) rotate(-.4deg);border-color:var(--grey)}
+.services li{transition:transform .25s}
+.services li:hover{transform:translateY(-4px)}
+.chips li{transition:background .2s,color .2s}
+.chips li:hover{background:var(--white);color:var(--black)}
+.mock .btn-m{animation:nudge 2.4s ease-in-out infinite}
+@keyframes nudge{0%,100%{box-shadow:0 0 0 0 rgba(244,244,242,.5)}50%{box-shadow:0 0 0 8px rgba(244,244,242,0)}}
+@media (prefers-reduced-motion: reduce){
+  .ticker .track,.mock .btn-m,.typing i,.typed::after,.msg.in{animation:none}
+  .case:hover .sheet,.services li:hover{transform:none}
+}
+
+@media (max-width:900px){
+  .hero,.case,.order{grid-template-columns:minmax(0,1fr)}
+  .hero{gap:36px;padding-block:40px 52px}
+  .case{gap:26px}
+  .sec{padding-block:52px}
+}
+@media (max-width:520px){
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats div:nth-child(2){border-right:0}
+  .stats div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  .mock .row{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="band hero-band">
+<canvas id="dots" aria-hidden="true"></canvas>
+<main id="top" class="wrap">
+  <header class="top">
+    <a class="brand" href="#top">sasha</a>
+    <nav aria-label="Розділи">
+      <a href="#cases">Кейси</a>
+      <a href="#process">Як я працюю</a>
+      <a href="#order">Замовити</a>
+    </nav>
+  </header>
+
+  <section class="hero" aria-labelledby="h1">
+    <div>
+      <ul class="roles" aria-label="Напрями">
+        <li>Python</li><li>Telegram-боти</li><li>Автоматизація</li><li>Лендінги</li>
+      </ul>
+      <h1 id="h1">Автоматизую те, на що у вас іде <span class="typed" id="typed">година щодня</span></h1>
+      <p class="lead">Пишу Telegram-ботів, скрипти для збору й чистки даних, підключаю сервіси через API і роблю прості сайти-візитки. Кожну роботу запускаю й перевіряю перед здачею та передаю з інструкцією.</p>
+      <div class="cta">
+        <a class="btn primary" href="#cases">Дивитися кейси</a>
+        <a class="btn ghost" href="#order">Як замовити</a>
+      </div>
+      <p class="note">Бот-сповіщувач працює щодня на реальних даних. Решта кейсів демонстраційні, результати отримано на тестових даних.</p>
+    </div>
+
+    <figure class="tg" aria-label="Повідомлення від бота-сповіщувача в Telegram">
+      <figcaption class="bar"><span class="dot" aria-hidden="true"></span><span>@sasha_fh_orders_bot · приклад стрічки</span><span class="counter">знайдено: <b id="found">1</b></span></figcaption>
+      <div class="msgs" id="msgs" aria-live="off">
+        <div class="msg sys">✅ Сповіщувач запущено. Надсилатиму нові проєкти.</div>
+        <div class="msg">
+          <b>Парсинг Google Maps: магазини для рибалок</b>
+          <div class="meta">2000 UAH · ставок: 4 · Парсинг даних</div>
+          <p>Зібрати базу магазинів по країні: назва, телефон, сайт, адреса, рейтинг. Видача в Google Sheets або CSV.</p>
+          <a class="lnk" href="https://freelancehunt.com/projects" target="_blank" rel="noopener">Відкрити проєкт</a>
+        </div>
+      </div>
+    </figure>
+  </section>
+</main>
+</div>
+
+<div class="ticker" aria-hidden="true"><div class="track">
+  <span>Telegram-боти</span><span>Парсинг даних</span><span>Інтеграції через API</span><span>Чистка таблиць</span><span>Сайти-візитки</span><span>Автоматизація</span>
+  <span>Telegram-боти</span><span>Парсинг даних</span><span>Інтеграції через API</span><span>Чистка таблиць</span><span>Сайти-візитки</span><span>Автоматизація</span>
+</div></div>
+
+<div class="band light">
+<div class="wrap">
+  <section class="sec" aria-labelledby="services-h">
+    <p class="label">Послуги</p>
+    <h2 id="services-h">Що я роблю</h2>
+    <ul class="services">
+      <li><h3>Telegram-боти</h3><p>Сповіщення, меню, запис клієнтів, розсилки з вашого каналу. Бот працює на вашому сервері або комп'ютері, токени лишаються у вас.</p></li>
+      <li><h3>Інтеграції через API</h3><p>Забираю дані з одного сервісу й передаю в інший: біржа → Telegram, таблиця → бот, сайт → Excel.</p></li>
+      <li><h3>Збір і чистка даних</h3><p>Парсинг відкритих каталогів, приведення таблиць до ладу. Сумнівні значення виношу на перевірку, нічого не вгадую.</p></li>
+      <li><h3>Сайти-візитки</h3><p>Односторінковий сайт для салону, майстра чи невеликого бізнесу: послуги, ціни, контакти, адаптація під телефон.</p></li>
+    </ul>
+  </section>
+</div>
+</div>
+
+<div class="band">
+<div class="wrap">
+  <section class="sec" id="cases" aria-labelledby="cases-h">
+    <p class="label">Кейси</p>
+    <h2 id="cases-h">Що вже зроблено</h2>
+    <p class="lede">Перший проєкт працює щодня. Інші запущено й перевірено на тестових даних.</p>
+
+    <div class="cases">
+      <article class="case">
+        <div>
+          <span class="tag live">Працює</span>
+          <h3>Бот-сповіщувач для Freelancehunt</h3>
+          <dl>
+            <div><dt>Завдання</dt><dd>Бачити нові замовлення раніше за інших, поки на них ще мало ставок.</dd></div>
+            <div><dt>Зроблено</dt><dd>Бот щохвилини бере свіжі проєкти через офіційний API біржі, фільтрує їх за категоріями, кількістю ставок і стоп-словами та надсилає в Telegram. Пам'ятає вже надіслані, тож дублів немає.</dd></div>
+            <div><dt>Результат</dt><dd>Перше сповіщення прийшло в день запуску. Під час налаштування знайшов і виправив помилку з таймаутом Telegram: тепер бот повторює запит замість падіння.</dd></div>
+          </dl>
+        </div>
+        <figure class="sheet term">
+          <figcaption class="bar"><span>.env: налаштування без зміни коду</span></figcaption>
+<pre><span class="p"># категорії: Python, боти, парсинг, AI</span>
+SKILL_IDS=22,180,169,175
+<span class="p"># лише проєкти, де ставок не більше</span>
+MAX_BIDS=15
+INTERVAL=60
+STOP_WORDS=казино,накрутк,обхід
+
+<span class="p">$</span> python fh_notifier.py
+Запам'ятав chat_id
+Працюю. Перевірка кожні 60 с, макс. ставок: 15.</pre>
+        </figure>
+      </article>
+
+      <article class="case">
+        <div>
+          <span class="tag">Демо</span>
+          <h3>Сайт-візитка барбершопу</h3>
+          <dl>
+            <div><dt>Завдання</dt><dd>Показати послуги, ціни й адресу так, щоб клієнт записався з телефону за хвилину.</dd></div>
+            <div><dt>Зроблено</dt><dd>Односторінковий сайт: перший екран із кнопкою запису, прайс, майстри, контакти. Адаптований під мобільні.</dd></div>
+            <div><dt>Результат</dt><dd>Готовий шаблон, який можна адаптувати під салон, студію чи майстра за 1–2 дні.</dd></div>
+          </dl>
+        </div>
+        <figure class="sheet" aria-label="Схема першого екрана сайту">
+          <figcaption class="bar"><span>barbershop / перший екран</span></figcaption>
+          <div class="mock">
+            <div class="nav"><span>КАНТ</span><span>Послуги · Майстри · Контакти</span></div>
+            <div class="h">Стрижка, після якої хочеться фото</div>
+            <div class="row">
+              <div>Стрижка<b>450 грн</b></div>
+              <div>Борода<b>300 грн</b></div>
+              <div>Комплекс<b>650 грн</b></div>
+            </div>
+            <span class="btn-m">Записатися</span>
+          </div>
+        </figure>
+      </article>
+
+      <article class="case">
+        <div>
+          <span class="tag">Демо</span>
+          <h3>Чистка таблиці клієнтів</h3>
+          <dl>
+            <div><dt>Завдання</dt><dd>Привести до ладу таблицю з різними форматами імен, пошт, телефонів, дат і сум.</dd></div>
+            <div><dt>Зроблено</dt><dd>Скрипт нормалізує дані, прибирає дублікати й виносить сумнівні значення в аркуш Issues з номером рядка.</dd></div>
+            <div><dt>Результат</dt><dd>З 16 рядків 14 чисті, 2 дублікати прибрано, 7 значень на перевірку людиною.</dd></div>
+          </dl>
+        </div>
+        <figure class="sheet">
+          <figcaption class="bar"><span>messy_customers.csv → cleaned.xlsx</span></figcaption>
+          <div class="stats">
+            <div><b>16</b><span>рядків на вході</span></div>
+            <div><b>14</b><span>у чистому аркуші</span></div>
+            <div><b>2</b><span>дублікати</span></div>
+            <div><b>7</b><span>на перевірку</span></div>
+          </div>
+          <div class="scroll">
+            <table class="data">
+              <thead><tr><th scope="col">Поле</th><th scope="col">До</th><th scope="col">Після</th></tr></thead>
+              <tbody>
+                <tr><td class="k">Ім'я</td><td class="b">'  olena   kovalenko '</td><td class="a">Olena Kovalenko</td></tr>
+                <tr><td class="k">Пошта</td><td class="b">'Olena.Kovalenko@Gmail.com '</td><td class="a">olena.kovalenko@gmail.com</td></tr>
+                <tr><td class="k">Телефон</td><td class="b">+380 (50) 765-43-21</td><td class="a">+380507654321</td></tr>
+                <tr><td class="k">Дата</td><td class="b">15.03.2024</td><td class="a">2024-03-15</td></tr>
+                <tr><td class="k">Сума</td><td class="b">1 200,50 UAH</td><td class="a">1200.5</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </figure>
+      </article>
+
+      <article class="case">
+        <div>
+          <span class="tag">Демо</span>
+          <h3>Парсер каталогу</h3>
+          <dl>
+            <div><dt>Завдання</dt><dd>Вручну переносити каталог із багатьох сторінок у таблицю.</dd></div>
+            <div><dt>Зроблено</dt><dd>Скрипт сам проходить сторінки, перетворює ціни на числа, повторює збійні завантаження й зберігає CSV та Excel.</dd></div>
+            <div><dt>Результат</dt><dd>У тесті з 3 сторінок зібрано 15 позицій одним запуском.</dd></div>
+          </dl>
+        </div>
+        <figure class="sheet">
+          <figcaption class="bar"><span>python scrape_books.py --pages 3 --out books</span></figcaption>
+          <div class="scroll">
+            <table class="data">
+              <thead><tr><th scope="col">title</th><th scope="col" class="num">price</th><th scope="col" class="num">rating</th><th scope="col">in stock</th></tr></thead>
+              <tbody>
+                <tr><td>A Light in the Attic</td><td class="num">£26.19</td><td class="num">1</td><td>yes</td></tr>
+                <tr><td>Tipping the Velvet</td><td class="num">£13.62</td><td class="num">3</td><td>yes</td></tr>
+                <tr><td>Soumission</td><td class="num">£39.14</td><td class="num">2</td><td>yes</td></tr>
+                <tr><td>The Requiem Red</td><td class="num">£51.34</td><td class="num">2</td><td class="no">no</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="cap">Тест на локальній сторінці з розміткою навчального сайту для скрапінгу.</p>
+        </figure>
+      </article>
+
+      <article class="case">
+        <div>
+          <span class="tag">Демо</span>
+          <h3>Організатор файлів</h3>
+          <dl>
+            <div><dt>Завдання</dt><dd>Розібрати папку з сотнями невпорядкованих файлів.</dd></div>
+            <div><dt>Зроблено</dt><dd>Сортування за типами. Без ключа --apply лише показує план, нічого не перезаписує й веде журнал для скасування.</dd></div>
+            <div><dt>Результат</dt><dd>Конфлікт однакових імен розв'язано, скасування повернуло всі файли на місця.</dd></div>
+          </dl>
+        </div>
+        <figure class="sheet term">
+          <figcaption class="bar"><span>Попередній перегляд і скасування</span></figcaption>
+<pre><span class="p">$</span> python organize_files.py Downloads
+data.csv     -&gt; Spreadsheets/data.csv
+photo.jpg    -&gt; Images/photo.jpg
+report.pdf   -&gt; Documents/report.pdf
+Preview only (8 files). Add --apply to move them.
+
+<span class="p">$</span> python organize_files.py Downloads --undo log.csv
+Restored 8 files.</pre>
+        </figure>
+      </article>
+    </div>
+  </section>
+
+  <section class="sec" id="process" aria-labelledby="process-h">
+    <p class="label">Процес</p>
+    <h2 id="process-h">Як я працюю</h2>
+    <ol class="steps">
+      <li><h3>Бриф</h3><p>Ви описуєте задачу й показуєте приклад. Я кажу, чи можу це зробити, за який час і скільки коштує.</p></li>
+      <li><h3>Розробка</h3><p>Пишу рішення під вашу задачу й показую проміжний результат.</p></li>
+      <li><h3>Тестування</h3><p>Запускаю на ваших даних і перевіряю, що все працює.</p></li>
+      <li><h3>Здача</h3><p>Передаю код та інструкцію запуску, допомагаю з першим запуском.</p></li>
+    </ol>
+  </section>
+
+  <section class="sec" aria-labelledby="tech-h">
+    <p class="label">Стек</p>
+    <h2 id="tech-h">Технології</h2>
+    <ul class="chips">
+      <li class="on">Python</li>
+      <li>Telegram Bot API</li>
+      <li>REST API</li>
+      <li>requests</li>
+      <li>pandas</li>
+      <li>BeautifulSoup</li>
+      <li>openpyxl</li>
+      <li>HTML / CSS</li>
+      <li>Ruby (основи)</li>
+      <li>Git</li>
+    </ul>
+  </section>
+
+  <section class="sec about" aria-labelledby="about-h">
+    <p class="label">Про мене</p>
+    <h2 id="about-h">Розробник автоматизацій</h2>
+    <p>Навчаюсь на комп'ютерних науках у ЧНУ, маю диплом Computer Academy STEP. Основна мова Python, також пишу на Ruby й верстаю прості сайти. Беру невеликі задачі, де результат видно одразу: бот, який сам надсилає потрібне, скрипт, що замінює годину ручної роботи, сайт, з якого клієнт записується з телефону.</p>
+    <p>Спілкуюсь українською й англійською (B1), тому працюю і з українськими, і з іноземними замовниками. Якщо задача мені не під силу, кажу одразу, ще до оплати.</p>
+  </section>
+</div>
+</div>
+
+<div class="band light">
+<div class="wrap">
+  <section class="sec" id="order" aria-labelledby="order-h">
+    <p class="label">Замовлення</p>
+    <h2 id="order-h">Як замовити</h2>
+    <div class="order">
+      <div>
+        <h3>Що надіслати</h3>
+        <ul>
+          <li>Що має робити бот, скрипт чи сайт</li>
+          <li>Приклад даних, посилання або референс</li>
+          <li>Кінцевий термін</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Умови</h3>
+        <ul>
+          <li>Працюю з відкритими даними й офіційними API.</li>
+          <li>Ключі й токени лишаються у вас, я їх не зберігаю.</li>
+          <li>Замовлення приймаю через Freelancehunt і Fiverr.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+</div>
+
+<div class="band">
+  <footer class="wrap foot">Sasha · Python, Telegram-боти, автоматизація</footer>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 1. Кнопки-якорі: плавна прокрутка без зміни адреси (у вікні артефакту хеш-навігація не працює)
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      var id = a.getAttribute('href').slice(1);
+      var el = id ? document.getElementById(id) : null;
+      if(!el) return;
+      e.preventDefault();
+      el.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'start'});
+    });
+  });
+
+  if(reduce) return;
+
+  // 2. Друкований заголовок
+  var words = ['година щодня','ручне копіювання','нескінченні таблиці','пошук замовлень','година щодня'];
+  var typed = document.getElementById('typed'), wi = 0, ci = words[0].length, del = true;
+  function tick(){
+    var w = words[wi];
+    if(del){ ci--; if(ci<=0){ del=false; wi=(wi+1)%words.length; } }
+    else { ci++; if(ci>=words[wi].length){ del=true; typed.textContent=words[wi]; return setTimeout(tick,2200); } }
+    typed.textContent = words[wi].slice(0, Math.max(ci,0));
+    setTimeout(tick, del ? 40 : 75);
+  }
+  setTimeout(tick, 2200);
+
+  // 3. Живий чат бота
+  var feed = [
+    ['Telegram-бот для запису в салон','4000 UAH','ставок: 3','Розробка ботів','Меню послуг, вибір майстра й часу, нагадування клієнту за день.'],
+    ['Зібрати каталог товарів у Excel','1500 UAH','ставок: 6','Парсинг даних','Близько 800 позицій: назва, ціна, наявність, фото. Оновлювати щотижня.'],
+    ['Лендінг для студії манікюру','3000 UAH','ставок: 9','Створення сайту','Одна сторінка: послуги, прайс, роботи, кнопка запису в Instagram.'],
+    ['Автопостинг з каналу в канал','2500 UAH','ставок: 5','Розробка ботів','Копіювати нові пости між двома моїми каналами без позначки «переслано».'],
+    ['Звіт продажів у Google Sheets','2000 UAH','ставок: 4','Автоматизація','Щоранку збирати замовлення з CRM і надсилати підсумок у Telegram.']
+  ];
+  var box = document.getElementById('msgs'), found = document.getElementById('found'), fi = 0, count = 1;
+  function esc(s){ return s.replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+  function push(){
+    var t = document.createElement('div'); t.className='typing'; t.innerHTML='<i></i><i></i><i></i>';
+    box.appendChild(t);
+    setTimeout(function(){
+      t.remove();
+      var f = feed[fi]; fi = (fi+1) % feed.length;
+      var m = document.createElement('div'); m.className = 'msg in';
+      m.innerHTML = '<b>'+esc(f[0])+'</b><div class="meta">'+esc(f[1])+' · '+esc(f[2])+' · '+esc(f[3])+'</div><p>'+esc(f[4])+'</p><a class="lnk" href="https://freelancehunt.com/projects" target="_blank" rel="noopener">Відкрити проєкт</a>';
+      box.appendChild(m);
+      while(box.querySelectorAll('.msg').length > 2) box.querySelector('.msg').remove();
+      found.textContent = ++count;
+    }, 1300);
+  }
+  setInterval(push, 5200);
+  setTimeout(push, 1800);
+
+  // 4. Сітка точок, що реагує на курсор
+  var cv = document.getElementById('dots'), ctx = cv.getContext('2d'), band = cv.parentElement;
+  var W, H, dpr, mx = -999, my = -999, t0 = performance.now();
+  function size(){ dpr = Math.min(window.devicePixelRatio||1, 2); W = band.clientWidth; H = band.clientHeight; cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  size(); window.addEventListener('resize', size);
+  band.addEventListener('pointermove', function(e){ var r = band.getBoundingClientRect(); mx = e.clientX-r.left; my = e.clientY-r.top; });
+  band.addEventListener('pointerleave', function(){ mx = my = -999; });
+  var gap = 26;
+  function draw(now){
+    var t = (now - t0)/1000;
+    ctx.clearRect(0,0,W,H);
+    for(var x = gap/2; x < W; x += gap){
+      for(var y = gap/2; y < H; y += gap){
+        var dx = x-mx, dy = y-my, d = Math.sqrt(dx*dx+dy*dy) || 1;
+        var wave = Math.sin(x*0.012 + y*0.009 + t*0.9)*0.5+0.5;
+        var near = Math.max(0, 1 - d/170);
+        var a = 0.05 + wave*0.07 + near*0.55;
+        var r = 1 + near*1.8;
+        ctx.fillStyle = 'rgba(244,244,242,'+a.toFixed(3)+')';
+        ctx.beginPath(); ctx.arc(x + (near? dx/d*near*-6 : 0), y + (near? dy/d*near*-6 : 0), r, 0, 6.283); ctx.fill();
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
